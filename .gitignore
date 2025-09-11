@@ -16,3 +16,6 @@ Thumbs.db
 .project
 .settings/
 out/
+/out/
+
+tasks.dat

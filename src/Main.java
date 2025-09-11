@@ -1,5 +1,49 @@
+import java.util.Scanner;
+
 public class Main{
     public static void main(String[] args) {
-        System.out.println("Тестовый запуск");
+        TaskManager manager = new TaskManager();
+
+        Scanner scanner = new Scanner(System.in);
+        
+        while(true){
+            System.out.println("-----Меню-----");
+            System.out.println("1) Добавить задачу");
+            System.out.println("2) Вывести список всех задач");
+            System.out.println("3) Завершить задачу");
+            System.out.println("4) Выход");
+            System.out.print("Выберите действие:");
+            int choice;
+
+            try {
+                choice = scanner.nextInt();
+                scanner.nextLine();
+            } catch (NumberFormatException e) {
+                System.out.println("Ошибка. Неверный ввод. Введите число от 1 до 4.");
+                continue;
+            }
+
+            switch (choice) {
+                case 1:
+                    manager.addTask();
+                    break;
+
+                case 2:
+                    manager.showTask();
+                    break;
+
+                case 3:
+                    manager.completedTask();
+                    break;
+
+                case 4:
+                    System.out.println("Выход из программы.");
+                    return;
+            
+                default:
+                    System.out.println("Выбрано неправильное действие. Повторите попытку");
+            }
+        }
+
     }
 } 
