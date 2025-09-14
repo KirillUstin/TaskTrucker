@@ -11,7 +11,9 @@ public class Main{
             System.out.println("1) Добавить задачу");
             System.out.println("2) Вывести список всех задач");
             System.out.println("3) Завершить задачу");
-            System.out.println("4) Выход");
+            System.out.println("4) Удалить задачу");
+            System.out.println("5) Редактировать задачу");
+            System.out.println("6) Выход");
             System.out.print("Выберите действие:");
             int choice;
 
@@ -37,6 +39,14 @@ public class Main{
                     break;
 
                 case 4:
+                    manager.deleteTask();
+                    break;
+
+                case 5:
+                    manager.editTask();
+                    break;
+
+                case 6:
                     System.out.println("Выход из программы.");
                     return;
             

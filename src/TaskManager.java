@@ -87,4 +87,66 @@ public class TaskManager {
     public void setTask(List<Task> t){
         this.task = t;
     }
+
+    public void deleteTask(){
+        List<Task> task = Storage.load(FILE_NAME);
+        boolean found = false;
+
+        System.out.println("Введите название задачи, которую хотите удалить:");
+        String nameDelTask = scanner.nextLine();
+
+        for(int i = 0; i < task.size(); i++){
+            if(task.get(i).getTitle().equals(nameDelTask)){
+                task.remove(i);
+                System.out.println("Задача '" + "' удалена.");
+                found = true;
+                break;
+            }
+        }
+
+        if(found){
+            Storage.save(task, FILE_NAME);
+        } else {
+            System.out.println("Такой задачи нет в списке.");
+        }
+    }
+
+    public void editTask(){
+        List<Task> task = Storage.load(FILE_NAME);
+        boolean found = false;
+
+        System.out.println("Введите название задачи, которую хотите отредактировать");
+        String nameEditTask = scanner.nextLine();
+
+        for(int i = 0; i < task.size(); i++){
+            if(task.get(i).getTitle().equals(nameEditTask)){
+                System.out.println("Введите новое описание задачи:");
+                String newDes = scanner.nextLine();
+                task.get(i).setDescription(newDes);
+
+                System.out.println("Введите новую дату, до которой надо выполнить задачу (дд.мм.гггг):");
+                String in = scanner.nextLine();
+                LocalDate newDate = null;
+                try {
+                    newDate = LocalDate.parse(in, formatter);
+                } catch (DateTimeParseException e) {
+                    System.out.println("Неверный формат даты!");
+                }
+
+                System.out.println("Введите новый приоритет:");
+                int newPrior = scanner.nextInt();
+                scanner.nextLine();
+
+                System.out.println("\nЗадача успешно изменена.");
+                found = true;
+                break;
+            }
+        }
+
+        if(found){
+            Storage.save(task, FILE_NAME);
+        } else {
+            System.out.println("Такой задачи нет в списке.");
+        }
+    }
 }
