@@ -9,7 +9,7 @@ public class TaskManager {
     private static final String FILE_NAME = "tasks.dat";
 
     List<Task> task = new ArrayList<>();
-    Scanner scanner = new Scanner(System.in);
+    Scanner scanner = new Scanner(System.in, "UTF-8");
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
     public void addTask(){
@@ -33,6 +33,10 @@ public class TaskManager {
         System.out.println("Введите приоритет задачи \n(1-высший, 2-средний, 3-низший): ");
         int priority = scanner.nextInt();
         scanner.nextLine();
+        if(priority > 3){
+            System.out.println("Приоритет не может быть больше 3.");
+            priority = 0;
+        }
 
         boolean completed = false;
 
@@ -98,7 +102,7 @@ public class TaskManager {
         for(int i = 0; i < task.size(); i++){
             if(task.get(i).getTitle().equals(nameDelTask)){
                 task.remove(i);
-                System.out.println("Задача '" + "' удалена.");
+                System.out.println("Задача '" + task.get(i).getTitle() + "' удалена.");
                 found = true;
                 break;
             }
@@ -129,6 +133,7 @@ public class TaskManager {
                 LocalDate newDate = null;
                 try {
                     newDate = LocalDate.parse(in, formatter);
+                    task.get(i).setDueDate(newDate);
                 } catch (DateTimeParseException e) {
                     System.out.println("Неверный формат даты!");
                 }
@@ -136,6 +141,21 @@ public class TaskManager {
                 System.out.println("Введите новый приоритет:");
                 int newPrior = scanner.nextInt();
                 scanner.nextLine();
+                if(newPrior > 3){
+                    System.out.println("Приоритет не может быть больше 3");
+                } else{
+                    task.get(i).setPriority(newPrior);
+                }
+
+                System.out.println("Задача выполнена?(y/n): ");
+                String tempCompl = scanner.nextLine();
+                if(tempCompl.equals("y")){
+                    task.get(i).setCompleted(true);
+                } else if(tempCompl.equals("n")) {
+                    task.get(i).setCompleted(false);
+                } else {
+                    System.out.println("Неверный формат!");
+                }
 
                 System.out.println("\nЗадача успешно изменена.");
                 found = true;
