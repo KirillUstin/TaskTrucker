@@ -4,7 +4,7 @@ public class Main{
     public static void main(String[] args) {
         TaskManager manager = new TaskManager();
 
-        Scanner scanner = new Scanner(System.in);
+        Scanner scanner = new Scanner(System.in, "UTF-8");
         
         while(true){
             System.out.println("-----Меню-----");
