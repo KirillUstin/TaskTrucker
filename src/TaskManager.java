@@ -169,4 +169,25 @@ public class TaskManager {
             System.out.println("Такой задачи нет в списке.");
         }
     }
+
+    public void sortByPriority(){
+        List<Task> task = Storage.load(FILE_NAME);
+
+        if(task.isEmpty()){
+            System.out.println("Список пуст");
+        } else {
+            for(int i = 0; i < task.size() - 1; i++){
+                for(int j = 0; j < task.size() - 1 - i; j++){
+                    if(task.get(j).getPriority() > task.get(j + 1).getPriority()){
+                        Task temp = task.get(j);
+                        task.set(j, task.get(j + 1));
+                        task.set(j + 1, temp);
+                    }
+                }
+            }
+
+            System.out.println("Задачи отсортированы");
+        }
+        Storage.save(task, FILE_NAME);
+    }
 }
