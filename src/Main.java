@@ -13,7 +13,8 @@ public class Main{
             System.out.println("3) Завершить задачу");
             System.out.println("4) Удалить задачу");
             System.out.println("5) Редактировать задачу");
-            System.out.println("6) Выход");
+            System.out.println("6) Отсортировать задачи по приоритету");
+            System.out.println("0) Выход");
             System.out.print("Выберите действие:");
             int choice;
 
@@ -47,6 +48,10 @@ public class Main{
                     break;
 
                 case 6:
+                    manager.sortByPriority();
+                    break;
+
+                case 0:
                     System.out.println("Выход из программы.");
                     return;
             
