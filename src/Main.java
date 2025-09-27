@@ -14,6 +14,7 @@ public class Main{
             System.out.println("4) Удалить задачу");
             System.out.println("5) Редактировать задачу");
             System.out.println("6) Отсортировать задачи по приоритету");
+            System.out.println("7) Отсортировать задачи по дате, до которой надо выполнить");
             System.out.println("0) Выход");
             System.out.print("Выберите действие:");
             int choice;
@@ -49,6 +50,10 @@ public class Main{
 
                 case 6:
                     manager.sortByPriority();
+                    break;
+
+                case 7:
+                    manager.sortByData();
                     break;
 
                 case 0:

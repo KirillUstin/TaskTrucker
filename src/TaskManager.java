@@ -1,8 +1,10 @@
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 import java.time.format.DateTimeFormatter;
 
 public class TaskManager {
@@ -188,6 +190,24 @@ public class TaskManager {
 
             System.out.println("Задачи отсортированы");
         }
+        Storage.save(task, FILE_NAME);
+    }
+
+    public void sortByData(){
+        List<Task> task = Storage.load(FILE_NAME);
+        List<Task> temp = new ArrayList<>();
+
+        if(task.isEmpty()){
+            System.out.println("Список пуст");
+        } else{
+            temp = task.stream().sorted(Comparator.comparing(Task::getDueDate)).collect(Collectors.toList());
+        }
+
+        task.clear();
+        task.addAll(temp);
+
+        System.out.println("Задачи отсортированы");
+
         Storage.save(task, FILE_NAME);
     }
 }
