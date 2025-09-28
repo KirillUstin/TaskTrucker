@@ -4,6 +4,9 @@ public class Main{
     public static void main(String[] args) {
         TaskManager manager = new TaskManager();
 
+        testConnect.main();
+        System.out.println("\n");
+
         Scanner scanner = new Scanner(System.in, "UTF-8");
         
         while(true){

@@ -1,22 +1,16 @@
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Scanner;
-import java.util.stream.Collectors;
 import java.time.format.DateTimeFormatter;
 
 public class TaskManager {
-    private static final String FILE_NAME = "tasks.dat";
-
-    List<Task> task = new ArrayList<>();
     Scanner scanner = new Scanner(System.in, "UTF-8");
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
+    //добавление задачи в базу данных
     public void addTask(){
-        List<Task> t = Storage.load(FILE_NAME);
-
         System.out.println("Введите название задачи: ");
         String title = scanner.nextLine();
 
@@ -42,172 +36,253 @@ public class TaskManager {
 
         boolean completed = false;
 
-        Task temp = new Task(title, description, dueDate, priority, completed);
-        t.add(temp);
+        String sql = "INSERT INTO tasks (title, description, dueDate, priority, completed) VALUES (?, ?, ?, ?, ?)";
 
-        Storage.save(t, FILE_NAME);
-    }
+        try (Connection connect = DBConnection.getConnection()){
+            java.sql.PreparedStatement stmt = connect.prepareStatement(sql);
 
-    public void showTask(){
-        List<Task> t = Storage.load(FILE_NAME);
-        if(t.isEmpty()){
-            System.out.println("Задач нет");
-        } else{
-            for(int i = 0; i < t.size(); i++){
-                System.out.println((i + 1) + ". " + t.get(i));
+            stmt.setString(1, title);
+            stmt.setString(2, description);
+            if(dueDate != null){
+                stmt.setDate(3, java.sql.Date.valueOf(dueDate));
+            } else{
+                stmt.setNull(3, java.sql.Types.DATE);
             }
+            stmt.setInt(4, priority);
+            stmt.setBoolean(5, completed);
+
+            stmt.executeUpdate();
+            System.out.println("Задача добавлена");
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
+    //вывод всех задач
+    public void showTask(){
+        String sql = "SELECT * FROM tasks";
+
+        try (Connection connect = DBConnection.getConnection()){
+            java.sql.Statement stmt = connect.createStatement();
+            java.sql.ResultSet res = stmt.executeQuery(sql);
+
+            boolean empty = true;
+
+            while(res.next()){
+                empty = false;
+                
+                String title = res.getString("title");
+                String description = res.getString("description");
+                LocalDate dueDate = res.getDate("dueDate") != null ? res.getDate("dueDate").toLocalDate() : null;
+                int priority = res.getInt("priority");
+                boolean completed = res.getBoolean("completed");
+
+                Task task = new Task(title, description, dueDate, priority, completed);
+
+                System.out.println(task);
+            }
+
+            if(empty){
+                System.out.println("База данных пуста");
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //пометить задачу как выполненную
     public void completedTask(){
-        List<Task> t = Storage.load(FILE_NAME);
+        String sql = "UPDATE tasks SET completed = ? WHERE title = ?";
 
         System.out.println("Введите название задачи, которую хотите завершить: ");
-        String compl = scanner.nextLine();
+        String titleCompl = scanner.nextLine();
 
-        boolean found = false;
+        boolean newCompleted = true;
+        boolean empty = true;
 
-        if(t.isEmpty()){
-            System.out.println("Задач нет");
-        } else{
-            for(int i = 0; i < t.size(); i++){
-                if(t.get(i).getTitle().equals(compl)){
-                    t.get(i).markCompleted();
-                    System.out.println("Задача завершена.");
-                    found = true;
-                }
+        try (Connection connect = DBConnection.getConnection()){
+            java.sql.PreparedStatement pstmt = connect.prepareStatement(sql);
+
+            pstmt.setBoolean(1, newCompleted);
+            pstmt.setString(2, titleCompl);
+            
+            int rows = pstmt.executeUpdate();
+            
+            if(rows > 0){
+                empty = false;
+                System.out.println("Задача [" + titleCompl + "] завершена");
             }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        
-        if(found){
-            Storage.save(t, FILE_NAME);
-        } else{
-            System.out.println("Такой задачи нет в списке");
+
+        if(empty){
+            System.out.println("Такой задачи нет в базе");
         }
     }
-
-    public List<Task> getTask() {
-        return task;
-    }
-
-    public void setTask(List<Task> t){
-        this.task = t;
-    }
-
+    
+    //удаление задачи из базы данных
     public void deleteTask(){
-        List<Task> task = Storage.load(FILE_NAME);
+        String sql = "DELETE FROM tasks WHERE title = ?";
+
+        System.out.println("Введите название задачи, которую хотите удалить: ");
+        String nameDel = scanner.nextLine();
         boolean found = false;
 
-        System.out.println("Введите название задачи, которую хотите удалить:");
-        String nameDelTask = scanner.nextLine();
+        try (Connection connect = DBConnection.getConnection()){
+            java.sql.PreparedStatement pstmt = connect.prepareStatement(sql);
 
-        for(int i = 0; i < task.size(); i++){
-            if(task.get(i).getTitle().equals(nameDelTask)){
-                task.remove(i);
-                System.out.println("Задача '" + task.get(i).getTitle() + "' удалена.");
-                found = true;
-                break;
-            }
+            pstmt.setString(1, nameDel);
+            found = true;
+
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
 
-        if(found){
-            Storage.save(task, FILE_NAME);
-        } else {
-            System.out.println("Такой задачи нет в списке.");
+        if(!found){
+            System.out.println("Такой задачи нет в базе");
+        } else{
+            System.out.println("Задача удалена");
         }
     }
 
+    //редактирование задачи
     public void editTask(){
-        List<Task> task = Storage.load(FILE_NAME);
-        boolean found = false;
+        String sql = "UPDATE tasks SET description = ?, dueDate = ?, priority = ?, completed = ? WHERE title = ?";
+        String sqlCheckTitle = "SELECT 1 FROM tasks WHERE title = ?";
 
         System.out.println("Введите название задачи, которую хотите отредактировать");
         String nameEditTask = scanner.nextLine();
+        boolean found = false;
 
-        for(int i = 0; i < task.size(); i++){
-            if(task.get(i).getTitle().equals(nameEditTask)){
-                System.out.println("Введите новое описание задачи:");
-                String newDes = scanner.nextLine();
-                task.get(i).setDescription(newDes);
+        //проверка на наличие задачи
+        try (Connection con = DBConnection.getConnection()){
+            java.sql.PreparedStatement tempPstmt = con.prepareStatement(sqlCheckTitle);
+            
+            tempPstmt.setString(1, nameEditTask);
 
-                System.out.println("Введите новую дату, до которой надо выполнить задачу (дд.мм.гггг):");
-                String in = scanner.nextLine();
-                LocalDate newDate = null;
-                try {
-                    newDate = LocalDate.parse(in, formatter);
-                    task.get(i).setDueDate(newDate);
-                } catch (DateTimeParseException e) {
-                    System.out.println("Неверный формат даты!");
+            try (java.sql.ResultSet res = tempPstmt.executeQuery()){
+                if(res.next()){
+                    found = true;
                 }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
-                System.out.println("Введите новый приоритет:");
-                int newPrior = scanner.nextInt();
-                scanner.nextLine();
-                if(newPrior > 3){
-                    System.out.println("Приоритет не может быть больше 3");
-                } else{
-                    task.get(i).setPriority(newPrior);
-                }
+        if(!found){
+            System.out.println("Задачи с таким названием нет. Попробуйте снова");
+            return;
+        }
+        
+        System.out.println("Введите новое описание задачи: ");
+        String newDes = scanner.nextLine();
 
-                System.out.println("Задача выполнена?(y/n): ");
-                String tempCompl = scanner.nextLine();
-                if(tempCompl.equals("y")){
-                    task.get(i).setCompleted(true);
-                } else if(tempCompl.equals("n")) {
-                    task.get(i).setCompleted(false);
-                } else {
-                    System.out.println("Неверный формат!");
-                }
+        System.out.println("Введите новую дату(дд.мм.гггг): ");
+        String tempNewDate = scanner.nextLine();
+        LocalDate newDate = null;
+        
+        try {
+            newDate = LocalDate.parse(tempNewDate, formatter);
+        } catch (DateTimeParseException e) {
+            System.out.println("Неверный формат даты");
+        }
 
-                System.out.println("\nЗадача успешно изменена.");
-                found = true;
-                break;
+        System.out.println("Введите новую приоритетность: ");
+        int newPrior = scanner.nextInt();
+        scanner.nextLine();
+
+        System.out.println("Задача выполнена?(y/n): ");
+        String tempStrCompl = scanner.nextLine();
+        boolean newCompleted = false;
+
+        if(tempStrCompl.length() > 1){
+            System.out.println("Количество введенных символов не должно превышать 1!");
+        } else{
+            if(tempStrCompl == "y" || tempStrCompl == "Y"){
+                newCompleted = true;
+            } else if(tempStrCompl == "n" && tempStrCompl == "N"){
+                newCompleted = false;
+            } else{
+                System.out.println("Неверный формат ввода! Следуйте примеру в скобках.");
             }
         }
 
-        if(found){
-            Storage.save(task, FILE_NAME);
-        } else {
-            System.out.println("Такой задачи нет в списке.");
+        try (Connection connect = DBConnection.getConnection()){
+            java.sql.PreparedStatement pstmt = connect.prepareStatement(sql);
+
+            pstmt.setString(1, newDes);
+            if(newDate != null){
+                pstmt.setDate(2, java.sql.Date.valueOf(newDate));
+            } else{
+                pstmt.setNull(2, java.sql.Types.DATE);
+            }
+            pstmt.setInt(3, newPrior);
+            pstmt.setBoolean(4, newCompleted);
+            pstmt.setString(5, nameEditTask);
+
+            int rows = pstmt.getUpdateCount();
+
+            if(rows > 1){
+                found = true;
+                System.out.println("Задача успешно изменена!");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        if(!found){
+            System.out.println("Задачи с таким названием нет в базе");
         }
     }
 
+    //сортировка задач по приоритету
     public void sortByPriority(){
-        List<Task> task = Storage.load(FILE_NAME);
+        String sql = "SELECT * FROM tasks ORDER BY priority ASC";
 
-        if(task.isEmpty()){
-            System.out.println("Список пуст");
-        } else {
-            for(int i = 0; i < task.size() - 1; i++){
-                for(int j = 0; j < task.size() - 1 - i; j++){
-                    if(task.get(j).getPriority() > task.get(j + 1).getPriority()){
-                        Task temp = task.get(j);
-                        task.set(j, task.get(j + 1));
-                        task.set(j + 1, temp);
-                    }
-                }
+        try (Connection connect = DBConnection.getConnection()){
+            java.sql.PreparedStatement pstmt = connect.prepareStatement(sql);
+            java.sql.ResultSet res = pstmt.executeQuery();
+
+            while(res.next()){
+                String t = res.getString("title");
+                String d = res.getString("description");
+                LocalDate dD = res.getDate("dueDate") != null ? res.getDate("dueDate").toLocalDate() : null;
+                int p = res.getInt("priority");
+                boolean c = res.getBoolean("completed");
+
+                Task task = new Task(t, d, dD, p, c);
+
+                System.out.println(task);
             }
-
-            System.out.println("Задачи отсортированы");
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        Storage.save(task, FILE_NAME);
     }
 
     public void sortByData(){
-        List<Task> task = Storage.load(FILE_NAME);
-        List<Task> temp = new ArrayList<>();
+        String sql = "SELECT * FROM tasks ORDER BY dueDate DESC";
 
-        if(task.isEmpty()){
-            System.out.println("Список пуст");
-        } else{
-            temp = task.stream().sorted(Comparator.comparing(Task::getDueDate)).collect(Collectors.toList());
+        try (Connection connect = DBConnection.getConnection()){
+            java.sql.PreparedStatement pstmt = connect.prepareStatement(sql);
+            java.sql.ResultSet res = pstmt.executeQuery();
+
+            while(res.next()){
+                String t = res.getString("title");
+                String d = res.getString("description");
+                LocalDate dD = res.getDate("dueDate") != null ? res.getDate("dueDate").toLocalDate() : null;
+                int p = res.getInt("priority");
+                boolean c = res.getBoolean("completed");
+
+                Task task = new Task(t, d, dD, p, c);
+
+                System.out.println(task);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-
-        task.clear();
-        task.addAll(temp);
-
-        System.out.println("Задачи отсортированы");
-
-        Storage.save(task, FILE_NAME);
     }
 }
