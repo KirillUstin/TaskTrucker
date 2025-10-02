@@ -2,33 +2,16 @@ import java.util.Scanner;
 
 public class Main{
     public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
         TaskManager manager = new TaskManager();
+        AuxiliaryMethods auxMethods = new AuxiliaryMethods();
 
         testConnect.main();
-        System.out.println("\n");
 
-        Scanner scanner = new Scanner(System.in, "UTF-8");
         
         while(true){
-            System.out.println("-----Меню-----");
-            System.out.println("1) Добавить задачу");
-            System.out.println("2) Вывести список всех задач");
-            System.out.println("3) Завершить задачу");
-            System.out.println("4) Удалить задачу");
-            System.out.println("5) Редактировать задачу");
-            System.out.println("6) Отсортировать задачи по приоритету");
-            System.out.println("7) Отсортировать задачи по дате, до которой надо выполнить");
-            System.out.println("0) Выход");
-            System.out.print("Выберите действие:");
-            int choice;
-
-            try {
-                choice = scanner.nextInt();
-                scanner.nextLine();
-            } catch (NumberFormatException e) {
-                System.out.println("Ошибка. Неверный ввод. Введите число от 1 до 4.");
-                continue;
-            }
+            auxMethods.showMenu();
+            int choice = auxMethods.inputAndCheckChoice();
 
             switch (choice) {
                 case 1:
@@ -56,7 +39,7 @@ public class Main{
                     break;
 
                 case 7:
-                    manager.sortByData();
+                    manager.sortByDate();
                     break;
 
                 case 0:
@@ -64,7 +47,7 @@ public class Main{
                     return;
             
                 default:
-                    System.out.println("Выбрано неправильное действие. Повторите попытку");
+                    System.out.println("Выбрано неправильное действие. Повторите попытку\n");
             }
         }
 

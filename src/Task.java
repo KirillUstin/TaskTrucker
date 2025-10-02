@@ -54,6 +54,6 @@ public class Task implements Serializable {
 
     @Override
     public String toString(){
-        return (completed ? "[+]" : "[ ]") + title + ":\n\tОписание:" + description + "\n\tДедлайн: " + dueDate + "\n\tПриоритет: " + priority + "\n\tВыполненность: " + completed;
+        return (completed ? "[+]" : "[ ]") + title + ":\n\tОписание:" + description + "\n\tДедлайн: " + dueDate + "\n\tПриоритет: " + priority + "\n\tВыполненность: " + completed + "\n";
     }
 }
