@@ -8,7 +8,7 @@ import java.util.Scanner;
 public class TaskManager {
     Scanner scanner = new Scanner(System.in, "UTF-8");
 
-    AuxiliaryMethods auxMethods = new AuxiliaryMethods();
+    AuxiliaryMethods auxMethods = new AuxiliaryMethods(scanner);
 
     //добавление задачи в базу данных
     public void addTask(){     

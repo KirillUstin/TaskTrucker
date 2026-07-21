@@ -4,20 +4,39 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.*;
 
 import java.time.LocalDate;
+import java.util.Scanner;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
+@ExtendWith(MockitoExtension.class)
 public class AuxillaryMethodsTest {
     AuxiliaryMethods auxiliaryMethods;
 
+    @Mock
+    Scanner mockScanner;
+
     @BeforeEach
     void setUp(){
-        auxiliaryMethods = new AuxiliaryMethods();
+        auxiliaryMethods = new AuxiliaryMethods(mockScanner);
+    }
+
+    @Test
+    void shouldInputChoice(){
+        when(mockScanner.nextLine()).thenReturn("2");
+
+        int result = auxiliaryMethods.inputChoice();
+
+        assertEquals(2, result);
     }
 
     @Nested

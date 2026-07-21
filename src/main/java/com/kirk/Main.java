@@ -1,9 +1,12 @@
 package com.kirk;
 
+import java.util.Scanner;
+
 public class Main{
     public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
         TaskManager manager = new TaskManager();
-        AuxiliaryMethods auxMethods = new AuxiliaryMethods();
+        AuxiliaryMethods auxMethods = new AuxiliaryMethods(scanner);
 
         testConnect.main();
         

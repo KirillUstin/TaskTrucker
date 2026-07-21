@@ -9,8 +9,12 @@ import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 
 public class AuxiliaryMethods {
-    Scanner scanner = new Scanner(System.in);
+    private Scanner scanner;
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.uuuu").withResolverStyle(ResolverStyle.STRICT);
+
+    public AuxiliaryMethods(Scanner scanner){
+        this.scanner = scanner;
+    }
 
     //вывод меню (для главной функции main)
     public void showMenu(){
