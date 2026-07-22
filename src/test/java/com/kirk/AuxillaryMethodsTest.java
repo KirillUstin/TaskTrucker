@@ -1,9 +1,6 @@
 package com.kirk;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDate;
@@ -37,6 +34,26 @@ public class AuxillaryMethodsTest {
         int result = auxiliaryMethods.inputChoice();
 
         assertEquals(2, result);
+    }
+
+    @Test
+    void shouldPositiveInputPriority(){
+        when(mockScanner.nextLine()).thenReturn("3");
+
+        int result = auxiliaryMethods.inputPriority();
+
+        assertEquals(3, result);
+    }
+
+    @Test
+    void shouldNullInputPriority(){
+        when(mockScanner.nextLine()).thenReturn("").thenReturn("2");
+        
+        int result = auxiliaryMethods.inputPriority();
+
+        assertEquals(2, result);
+
+        verify(mockScanner, times(2)).nextLine();
     }
 
     @Nested
